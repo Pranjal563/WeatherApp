@@ -1,171 +1,69 @@
-let loc =document.getElementById("location");
-let tempicon=document.getElementById("temp-icon");
-let tempvalue=document.getElementById("temp-value");
-let climate =document.getElementById("climate");
-let iconfile;
-const searchInput=document.getElementById("search-input");
-const searchButton=document.getElementById("search-button");
+const wrapper = document.querySelector(".wrapper"),
+inputPart = document.querySelector(".input-part"),
+infoTxt = inputPart.querySelector(".info-txt"),
+inputField = inputPart.querySelector("input"),
+locationBtn = inputPart.querySelector("button"),
+weatherPart = wrapper.querySelector(".weather-part"),
+wIcon = weatherPart.querySelector("img"),
+arrowBack = wrapper.querySelector("header i");
 
-searchButton.addEventListener('click', (e)=>
-{
+let api;
 
-e.preventDefault();
-getWeather(searchInput.value);
-searchInput.value='';
-
-
+inputField.addEventListener("keyup", e =>{
+    if(e.key == "Enter" && inputField.value != ""){
+        requestApi(inputField.value);
+    }
 });
 
+function requestApi(city){
+    api = `http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=b7b9c9b361ab2b10dd3e0c60eb69373b`;
+    fetchData();
+}
 
+function fetchData(){
+    infoTxt.innerText = "Getting weather details...";
+    infoTxt.classList.add("pending");
+    fetch(api).then(res => res.json()).then(result => weatherDetails(result)).catch(() =>{
+        infoTxt.innerText = "Something went wrong";
+        infoTxt.classList.replace("pending", "error");
+    });
+}
 
-const getWeather=async (city)=>
-{
-    try{
-
-        const response= await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=dab3af44de7d24ae7ff86549334e45bd`,
-   
-            {mode: 'cors'}
-        );
-
-        const weatherData= await response.json();
-        console.log(weatherData);
-        const{name}=weatherData;
-        const{feels_like}=weatherData.main;
-        const{id,main}=weatherData.weather[0];
-        loc.textContent=name;
-        climate.textContent=main;
-        tempvalue.textContent=Math.round(feels_like-273);
-        if(id<300 && id>200)
-        {
-            tempicon.src="./icons/thunderstorm.svg"
+function weatherDetails(info){
+    if(info.cod == "404"){
+        infoTxt.classList.replace("pending", "error");
+        infoTxt.innerText = `${inputField.value} isn't a valid city name`;
+    }else{
+        const city = info.name;
+        const country = info.sys.country;
+        const {description, id} = info.weather[0];
+        const {temp, feels_like, humidity} = info.main;
+        if(id == 800){
+            wIcon.src = "icons/clear.svg";
+        }else if(id >= 200 && id <= 232){
+            wIcon.src = "icons/storm.svg";  
+        }else if(id >= 600 && id <= 622){
+            wIcon.src = "icons/snow.svg";
+        }else if(id >= 701 && id <= 781){
+            wIcon.src = "icons/haze.svg";
+        }else if(id >= 801 && id <= 804){
+            wIcon.src = "icons/cloud.svg";
+        }else if((id >= 500 && id <= 531) || (id >= 300 && id <= 321)){
+            wIcon.src = "icons/rain.svg";
         }
-       else  if(id<400 && id>300)
-        {
-            tempicon.src="./icons/cloud-solid.svg"
-        }
-       else if(id<600&& id>500)
-        {
-            tempicon.src="./icons/rain.svg"
-        }
-       else  if(id<700 && id>600)
-        {
-            tempicon.src="./icons/snow.svg"
-        }
-       else  if(id<800 && id>700)
-        {
-            tempicon.src="./icons/clouds.svg"
-        }
-         else if(id==800)
-        {
-            tempicon.src="./icons/clouds-and-sun.svg"
-        }
-
-
-
-   
+        
+        weatherPart.querySelector(".temp .numb").innerText = Math.floor(temp-273);
+        weatherPart.querySelector(".weather").innerText = description;
+        weatherPart.querySelector(".location span").innerText = `${city}, ${country}`;
+        weatherPart.querySelector(".temp .numb-2").innerText = Math.floor(feels_like-273);
+        weatherPart.querySelector(".humidity span").innerText = `${humidity}%`;
+        infoTxt.classList.remove("pending", "error");
+        infoTxt.innerText = "";
+        inputField.value = "";
+        wrapper.classList.add("active");
     }
-catch(error)
-{
-    alert('city not found');
 }
 
-
-
-
-
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-window.addEventListener("load" ,()=>{
-
-let long;
-let lat;
-
-if(navigator.geolocation)
-{
-
-    navigator.geolocation.getCurrentPosition((position)=>
-    {
-
-   
-    
-    long=position.coords.longitude;
-    lat=position.coords.latitude;
-    const proxy="https://cors-anywhere.herokuapp.com/";
-
-        const api=`${proxy}api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${long}&appid=dab3af44de7d24ae7ff86549334e45bd     `
-
-        fetch(api).then((response)=>{
-
-            return response.json();
-
-
-        })
-
-        .then (data =>
-            {
-
-                    const{name}=data;
-                    const{feels_like}=data.main;
-                    const{id,main}=data.weather[0];
-
-
-                    loc.textContent=name;
-                    climate.textContent=main;
-                    tempvalue.textContent=Math.round(feels_like-273);
-                    if(id<300 && id>200)
-                    {
-                        tempicon.src="./icons/thunderstorm.svg"
-                    }
-                   else  if(id<400 && id>300)
-                    {
-                        tempicon.src="./icons/cloud-solid.svg"
-                    }
-                   else if(id<600&& id>500)
-                    {
-                        tempicon.src="./icons/rain.svg"
-                    }
-                   else  if(id<700 && id>600)
-                    {
-                        tempicon.src="./icons/snow.svg"
-                    }
-                   else  if(id<800 && id>700)
-                    {
-                        tempicon.src="./icons/clouds.svg"
-                    }
-                     else if(id==800)
-                    {
-                        tempicon.src="./icons/clouds-and-sun.svg"
-                    }
-
-
-
-
-
-                    console.log(data);
-
-
-            })
-
-
-
-}
-    
-    
-    
-    )}
-
-
-})
+arrowBack.addEventListener("click", ()=>{
+    wrapper.classList.remove("active");
+});
