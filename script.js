@@ -16,8 +16,10 @@ inputField.addEventListener("keyup", e =>{
 });
 
 function requestApi(city){
-    api = `http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=b7b9c9b361ab2b10dd3e0c60eb69373b`;
+    api = `http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=14f99b0c40d0617e170ddfc4443ee21b`;
     fetchData();
+    // 14f99b0c40d0617e170ddfc4443ee21b
+    // b7b9c9b361ab2b10dd3e0c60eb69373b
 }
 
 function fetchData(){
